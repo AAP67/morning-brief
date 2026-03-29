@@ -1,6 +1,8 @@
 import { UserProfile, GenerateResponse } from './types';
 
-const BASE = '/api';
+const BASE = import.meta.env.PROD
+  ? 'https://morning-brief-production-08d3.up.railway.app'
+  : '/api';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
