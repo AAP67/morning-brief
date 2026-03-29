@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useProfile } from '../hooks/useProfile';
 import { User, Briefcase, Tag, Building2, Sparkles, ArrowRight, Zap } from 'lucide-react';
 import { UserProfile } from '../lib/types';
 import { api } from '../lib/api';
@@ -16,6 +17,7 @@ const TONES = [
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const { saveProfile } = useProfile();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<Partial<UserProfile>>({
@@ -48,16 +50,9 @@ export default function Onboarding() {
     }
   };
 
-  const handlePreview = async () => {
-    setLoading(true);
-    try {
-      await api.previewBrief(profile as UserProfile);
-      navigate('/');
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+  const handleSave = () => {
+    saveProfile(profile as UserProfile);
+    navigate('/');
   };
 
   return (
@@ -272,7 +267,7 @@ export default function Onboarding() {
           <div className="flex gap-3">
             <button onClick={() => setStep(1)} className="px-6 py-3 rounded-xl bg-surface-3 hover:bg-surface-4 text-sm font-medium transition-colors">Back</button>
             <button
-              onClick={() => navigate('/')}
+              onClick={handleSave}
               className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-accent-lime text-surface-0 font-display font-semibold text-sm hover:bg-accent-lime/90 transition-colors"
             >
               <Zap className="w-4 h-4" />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, RefreshCw, ArrowRight } from 'lucide-react';
 import { api } from '../lib/api';
@@ -6,8 +6,10 @@ import { MorningBrief, PipelineMetrics } from '../lib/types';
 import BriefView from '../components/BriefView';
 import MetricsPanel from '../components/MetricsPanel';
 import LoadingBrief from '../components/LoadingBrief';
+import { useProfile } from '../hooks/useProfile';
 
 export default function Dashboard() {
+  const { profile, hasCustomProfile } = useProfile();
   const [brief, setBrief] = useState<MorningBrief | null>(null);
   const [metrics, setMetrics] = useState<PipelineMetrics | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,13 +21,14 @@ export default function Dashboard() {
     setError(null);
     setLoadingStage(0);
 
-    // Simulate stage progression while waiting
     const stageTimer = setInterval(() => {
       setLoadingStage((s) => Math.min(s + 1, 3));
     }, 3000);
 
     try {
-      const res = await api.generateDemo();
+      const res = hasCustomProfile
+        ? await api.previewBrief(profile)
+        : await api.generateDemo();
       setBrief(res.brief);
       setMetrics(res.metrics);
     } catch (e: any) {
@@ -38,7 +41,6 @@ export default function Dashboard() {
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -76,7 +78,6 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      {/* Error */}
       {error && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -87,10 +88,8 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {/* Loading state */}
       {loading && <LoadingBrief currentStage={loadingStage} />}
 
-      {/* Brief + Metrics */}
       {!loading && brief && metrics && (
         <div className="space-y-10">
           <BriefView brief={brief} />
@@ -100,7 +99,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Empty state */}
       {!loading && !brief && !error && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -122,7 +120,6 @@ export default function Dashboard() {
             Generate your first brief
           </button>
 
-          {/* Tech stack badges */}
           <div className="mt-12 flex justify-center gap-3">
             {[
               { name: 'Groq', desc: 'Extract', color: 'text-accent-orange border-accent-orange/20 bg-accent-orange/5' },
