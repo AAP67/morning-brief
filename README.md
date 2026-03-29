@@ -1,21 +1,68 @@
 # Morning Brief — Multi-Model AI Morning Brief Engine
 
-A personalized morning brief generator that orchestrates **3 AI models** across a pipeline:
+A personalized morning brief generator that orchestrates **3 AI models** across a pipeline — each doing what it's best at — to deliver a tailored intelligence brief for any professional, for under a penny.
 
-| Stage | Model | Purpose |
-|-------|-------|---------|
-| 1. Extract & Parse | **Groq** (Llama 3) | Fast, cheap summarization of raw articles |
-| 2. Score & Rank | **Gemini** (Flash) | Relevance scoring against user profile |
-| 3. Synthesize Brief | **Claude** (Sonnet) | Editorial writing — polished, personalized brief |
+**[Live Demo](https://morning-brief-sandy.vercel.app)** · **[API](https://morning-brief-production-08d3.up.railway.app/health)**
+
+---
+
+## How It Works
+
+| Stage | Model | Purpose | Avg Latency |
+|-------|-------|---------|-------------|
+| 1. Extract & Parse | **Groq** (Llama 3.3 70B) | Fast summarization of 35+ raw articles | ~8s |
+| 2. Score & Rank | **Gemini** (3.1 Flash Lite) | Relevance scoring against user profile | ~12s |
+| 3. Synthesize Brief | **Claude** (Sonnet) | Editorial writing — polished, personalized brief | ~16s |
+
+**Total: ~35s | Cost: <1¢ per brief**
+
+## Architecture
+
+```
+Data Sources (NewsAPI, RSS, Yahoo Finance, HN, GitHub)
+        │  parallel fetch
+        ▼
+   ┌─────────────────────┐
+   │  Stage 1: Groq      │  Extract summaries + entities
+   │  (Llama 3.3 — fast) │  Batched in groups of 5
+   └─────────┬───────────┘
+             │
+   ┌─────────▼───────────┐     ┌──────────────┐
+   │  Stage 2: Gemini    │◄────│ User Profile  │
+   │  (Flash — scoring)  │     │ (localStorage)│
+   └─────────┬───────────┘     └──────────────┘
+             │  top articles by relevance
+   ┌─────────▼───────────┐
+   │  Stage 3: Claude    │  Editorial synthesis
+   │  (Sonnet — writing) │  Tone + length matched
+   └─────────┬───────────┘
+             │
+             ▼
+      Morning Brief → Dashboard + Metrics
+```
 
 ## Quick Start
 
+### Backend
+
 ```bash
 cd backend
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env   # Fill in your API keys
 python main.py          # Starts on http://localhost:8000
 ```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev             # Starts on http://localhost:5173
+```
+
+The Vite dev server proxies `/api/*` to the backend automatically.
 
 ## API Endpoints
 
@@ -28,39 +75,6 @@ python main.py          # Starts on http://localhost:8000
 | `POST` | `/briefs/preview` | Preview brief (no save) |
 | `GET` | `/briefs/{uid}` | List past briefs |
 | `POST` | `/demo/generate` | Demo brief (no Firebase needed) |
-
-## Architecture
-
-```
-Data Sources (NewsAPI, RSS, Yahoo Finance, HN, GitHub)
-        │
-        ▼
-   ┌─────────────────────┐
-   │  Stage 1: Groq      │  Extract summaries + entities
-   │  (Llama 3 — fast)   │  Batched, ~200ms
-   └─────────┬───────────┘
-             │
-   ┌─────────▼───────────┐     ┌──────────────┐
-   │  Stage 2: Gemini    │◄────│ User Profile  │
-   │  (Flash — scoring)  │     │ (Firebase)    │
-   └─────────┬───────────┘     └──────────────┘
-             │
-   ┌─────────▼───────────┐
-   │  Stage 3: Claude    │  Editorial synthesis
-   │  (Sonnet — writing) │  Tone + length matched
-   └─────────┬───────────┘
-             │
-             ▼
-      Morning Brief → Firebase + Delivery
-```
-
-## Required API Keys
-
-- **Groq**: https://console.groq.com
-- **Google AI (Gemini)**: https://aistudio.google.com/apikey
-- **Anthropic (Claude)**: https://console.anthropic.com
-- **NewsAPI**: https://newsapi.org (free tier: 100 req/day)
-- **Firebase**: Service account JSON from Firebase Console
 
 ## Profile Schema
 
@@ -76,11 +90,29 @@ Data Sources (NewsAPI, RSS, Yahoo Finance, HN, GitHub)
   "length": "medium",
   "delivery_channel": "app"
 }
+
 ```
+
+Profiles support 4 tone options (executive, casual, technical, analytical) and 3 length settings (short, medium, detailed).
 
 ## Stack
 
-- **Backend**: Python, FastAPI, async pipeline
-- **Models**: Groq, Gemini, Claude (multi-model orchestration)
-- **Storage**: Firebase Firestore
-- **Frontend**: React + Vite + Tailwind (coming soon)
+| Layer | Tech |
+|-------|------|
+| Frontend | React, TypeScript, Vite, Tailwind CSS, Framer Motion |
+| Backend | Python, FastAPI, async pipeline |
+| Models | Groq (Llama 3.3), Gemini (Flash Lite), Claude (Sonnet) |
+| Deployment | Vercel (frontend), Railway (backend) |
+
+## Required API Keys
+
+| Service | Get a key | Notes |
+|---------|-----------|-------|
+| Groq | [console.groq.com](https://console.groq.com) | Free tier available |
+| Google AI (Gemini) | [aistudio.google.com](https://aistudio.google.com/apikey) | Free tier available |
+| Anthropic (Claude) | [console.anthropic.com](https://console.anthropic.com) | Pay-as-you-go |
+| NewsAPI | [newsapi.org](https://newsapi.org) | Free tier: 100 req/day |
+
+## License
+
+MIT
