@@ -5,15 +5,15 @@ from models.brief import RawArticle, ExtractedArticle
 from config import get_settings
 
 
-EXTRACTION_PROMPT = """You are a news analyst. For each article, extract:
-1. A concise 2-sentence summary
-2. Key entities (companies, people, technologies)
+EXTRACTION_PROMPT = """You are a news analyst. For each article below, extract a summary and entities.
 
-Respond in JSON array format:
-[{"summary": "...", "key_entities": ["...", "..."]}]
+Articles:
+{articles}
 
-Articles to process:
-{articles}"""
+Respond with ONLY this JSON (no other text):
+{{"results": [{{"summary": "2 sentence summary", "key_entities": ["entity1", "entity2"]}}]}}
+
+Return one object per article in the results array, in the same order."""
 
 
 async def extract_articles(raw_articles: list[RawArticle]) -> tuple[list[ExtractedArticle], dict]:
@@ -57,7 +57,12 @@ async def extract_articles(raw_articles: list[RawArticle]) -> tuple[list[Extract
             parsed = json.loads(content)
 
             # Handle both {"results": [...]} and [...] formats
-            results = parsed if isinstance(parsed, list) else parsed.get("results", parsed.get("articles", []))
+            if isinstance(parsed, list):
+                results = parsed
+            elif isinstance(parsed, dict):
+                results = parsed.get("results", parsed.get("articles", list(parsed.values())[0] if parsed else []))
+            else:
+                results = []
 
             for article, result in zip(batch, results):
                 extracted.append(ExtractedArticle(
