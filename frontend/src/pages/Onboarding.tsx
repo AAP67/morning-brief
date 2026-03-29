@@ -52,7 +52,7 @@ export default function Onboarding() {
 
   const handleSave = () => {
     saveProfile(profile as UserProfile);
-    navigate('/');
+    navigate('/app');
   };
 
   return (
