@@ -143,6 +143,28 @@ export default function Landing() {
           </motion.div>
         </section>
 
+        {/* Demo video */}
+        <section className="max-w-4xl mx-auto px-6 pb-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="glass-card p-1 rounded-2xl glow-lime overflow-hidden"
+          >
+            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+              <iframe
+                src="https://share.descript.com/embed/IMB86IdQcq6"
+                className="absolute inset-0 w-full h-full rounded-xl"
+                style={{ border: 'none' }}
+                allowFullScreen
+              />
+            </div>
+          </motion.div>
+          <p className="text-center text-xs text-muted font-mono mt-3">
+            Watch the full demo — profile setup to personalized brief in 30 seconds
+          </p>
+        </section>
+
         {/* Pipeline section */}
         <section className="max-w-4xl mx-auto px-6 py-20">
           <motion.div
