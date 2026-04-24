@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Zap, ArrowRight, Cpu, Brain, PenTool, Clock, Coins, BarChart3 } from 'lucide-react';
@@ -40,6 +41,33 @@ const STATS = [
   { icon: Coins, value: '<1¢', label: 'Cost per brief' },
   { icon: BarChart3, value: '35+', label: 'Sources scanned' },
 ];
+
+function DemoVideo() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 mx-auto px-5 py-2.5 rounded-xl bg-white/5 border border-border text-sm font-mono text-zinc-300 hover:text-white hover:bg-white/10 transition-colors"
+      >
+        <span>{open ? '▾' : '▸'}</span>
+        🎬 Watch the demo
+      </button>
+      {open && (
+        <div className="mt-4 glass-card p-1 rounded-2xl glow-lime overflow-hidden">
+          <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+            <iframe
+              src="https://share.descript.com/embed/IMB86IdQcq6"
+              className="absolute inset-0 w-full h-full rounded-xl"
+              style={{ border: 'none' }}
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Landing() {
   return (
@@ -124,6 +152,16 @@ export default function Landing() {
             </div>
           </motion.div>
 
+          {/* Demo video */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-12"
+          >
+            <DemoVideo />
+          </motion.div>
+
           {/* Stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -141,28 +179,6 @@ export default function Landing() {
               </div>
             ))}
           </motion.div>
-        </section>
-
-        {/* Demo video */}
-        <section className="max-w-4xl mx-auto px-6 pb-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="glass-card p-1 rounded-2xl glow-lime overflow-hidden"
-          >
-            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-              <iframe
-                src="https://share.descript.com/embed/IMB86IdQcq6"
-                className="absolute inset-0 w-full h-full rounded-xl"
-                style={{ border: 'none' }}
-                allowFullScreen
-              />
-            </div>
-          </motion.div>
-          <p className="text-center text-xs text-muted font-mono mt-3">
-            Watch the full demo — profile setup to personalized brief in 30 seconds
-          </p>
         </section>
 
         {/* Pipeline section */}
